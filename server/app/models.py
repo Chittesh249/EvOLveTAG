@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, EmailField
+from mongoengine import Document, StringField, EmailField, URLField, DictField
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(Document):
@@ -6,6 +6,12 @@ class User(Document):
     email = EmailField(required=True, unique=True)
     password_hash = StringField(required=True)
     role = StringField(default='member')
+
+    # 🔽 New profile fields
+    bio = StringField()
+    designation = StringField()
+    social = DictField()  # e.g., {"twitter": "...", "linkedin": "..."}
+    profile_pic_url = URLField()  # URL to profile picture
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -18,5 +24,9 @@ class User(Document):
             'id': str(self.id),
             'name': self.name,
             'email': self.email,
-            'role': self.role
+            'role': self.role,
+            'bio': self.bio,
+            'designation': self.designation,
+            'social': self.social,
+            'profile_pic_url': self.profile_pic_url
         }
