@@ -26,7 +26,7 @@ Members can edit their own profiles, and a central admin can manage all content.
 | General Visitors   | View public-facing content such as home, newsletters, members  |
 | DevOps Team        | Deploy and maintain the web application                        |
 
-### 1.4 🧾 Definitions & Abbreviations
+### 1.4 Definitions & Abbreviations
 
 | Term         | Meaning                                             |
 |--------------|-----------------------------------------------------|
