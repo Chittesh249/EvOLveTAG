@@ -1,9 +1,13 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models.user import User
+from app.models.user import User, RoleEnum
 from flask_jwt_extended import create_access_token
+from werkzeug.security import check_password_hash
+import datetime
+from app.config import Config
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -11,21 +15,26 @@ def register():
     email = data.get('email')
     name = data.get('name')
     password = data.get('password')
+    role = data.get('role', 'member')  # default to 'member'
 
     if not all([email, name, password]):
         return jsonify({'error': 'Missing fields'}), 400
 
+    if role not in [r.value for r in RoleEnum]:
+        return jsonify({'error': 'Invalid role'}), 400
+
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 409
 
-    user = User(email=email, name=name)
+    user = User(email=email, name=name, role=RoleEnum(role))
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
 
     return jsonify({'message': 'User registered successfully'}), 201
 
-@auth.route('/login', methods=['POST'])
+
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
@@ -36,9 +45,10 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'message': 'Invalid credentials'}), 401
 
-    token = jwt.encode({
-        'id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    }, Config.JWT_SECRET_KEY, algorithm="HS256")
+    # Only allow login for admin and member roles
+    if user.role not in [RoleEnum.admin, RoleEnum.member]:
+        return jsonify({'message': 'You are not authorized to log in'}), 403
+
+    token = create_access_token(identity=user.id)
 
     return jsonify({'token': token, 'user': user.to_dict()}), 200
