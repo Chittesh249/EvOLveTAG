@@ -28,5 +28,8 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             "name": self.name,
-            "role": self.role.value  # convert Enum to string
+            "role": self.role.value  # Convert Enum to string
         }
+
+    def __repr__(self):
+        return f"<User {self.email} ({self.role.value})>"
