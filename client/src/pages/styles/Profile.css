@@ -1,0 +1,22 @@
+.profile-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.profile-container input,
+.profile-container textarea {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0 16px;
+  font-size: 16px;
+}
+
+.profile-container button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
