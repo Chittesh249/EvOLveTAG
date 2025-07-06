@@ -1,39 +1,37 @@
-# Node.js
+# Node.js dependencies and build
 node_modules/
+dist/
+build/
+out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
 
-# macOS
-.DS_Store
+# Environment variables
+.env
+.env.*
 
 # Logs
 logs/
 *.log
 
-# Environment variables
-.env
-.env.*
+# macOS system files
+.DS_Store
 
-# Build output
-dist/
-build/
-out/
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# IDEs and editors
+# Editor directories and files
 .vscode/
 .idea/
 *.sublime-workspace
 *.sublime-project
 
-# OS generated files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Misc
+# Miscellaneous
 *.local
 *.swp
 *.swo
