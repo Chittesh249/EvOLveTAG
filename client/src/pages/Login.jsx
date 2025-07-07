@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import API from '../api/axios';
+import { jwtDecode } from 'jwt-decode';
 import './styles/Login.css';
 
 export default function Login() {
@@ -9,9 +10,19 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await API.post('/auth/login', form);
-      localStorage.setItem('token', res.data.access_token);
+      const token = res.data.access_token;
+
+      localStorage.setItem('token', token);
       alert("Login successful!");
-      window.location.href = '/profile';
+
+      const decoded = jwtDecode(token);
+      const role = decoded.role;
+
+      if (role === 'ADMIN') {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/profile';
+      }
     } catch (err) {
       alert(err.response?.data?.msg || 'Login failed');
     }
