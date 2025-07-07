@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import './styles/AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -29,9 +31,15 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
+  const handleUploadClick = () => {
+    navigate('/upload');
+  };
+
   return (
     <div className="admin-dashboard">
       <h2>Admin Dashboard</h2>
+      <button className="upload-btn" onClick={handleUploadClick}>Upload Paper</button>
+
       <h3>All Users</h3>
       <table>
         <thead>
