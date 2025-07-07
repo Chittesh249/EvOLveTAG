@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (
-    JWTManager, create_access_token, jwt_required, get_jwt_identity
+    JWTManager, create_access_token, jwt_required,
+    get_jwt_identity, get_jwt
 )
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -11,19 +12,19 @@ from enum import Enum
 from datetime import timedelta
 import os
 
-# === Setup ===
+# === App Setup ===
 app = Flask(__name__)
 CORS(app)
 
-# === Config ===
+# === Configuration ===
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://vasudevkishor@localhost/evolve_tag'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # 🔒 Change in production
+app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # Change in production
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# === Init ===
+# === Extensions Init ===
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
@@ -52,13 +53,13 @@ class Paper(db.Model):
     author = db.Column(db.String(120), nullable=False)
     filename = db.Column(db.String(255), nullable=False)
 
-# === Helper ===
+# === Helpers ===
 ALLOWED_EXTENSIONS = {'pdf'}
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # === Auth Routes ===
-
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
@@ -68,6 +69,7 @@ def register():
 
     if not email or not password:
         return jsonify({'msg': 'Email and password required'}), 400
+
     if User.query.filter_by(email=email).first():
         return jsonify({'msg': 'User already exists'}), 400
 
@@ -97,7 +99,6 @@ def login():
     return jsonify({'access_token': access_token}), 200
 
 # === Profile Routes ===
-
 @app.route('/api/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -128,8 +129,7 @@ def update_profile():
     db.session.commit()
     return jsonify({'msg': 'Profile updated'}), 200
 
-# === Admin Route ===
-
+# === Admin-only ===
 @app.route('/api/admin/users', methods=['GET'])
 @jwt_required()
 def get_all_users():
@@ -148,17 +148,16 @@ def get_all_users():
         } for u in users
     ]), 200
 
-# === Paper Routes ===
-
+# === Paper Upload & Access ===
 @app.route('/api/papers', methods=['POST'])
 @jwt_required()
 def upload_paper():
     claims = get_jwt()
-    if claims.get('role') != 'ADMIN':
-        return jsonify({'msg': 'Admins only'}), 403
+    if claims.get('role') not in ['ADMIN', 'MEMBER']:
+        return jsonify({'msg': 'Only members or admins can upload papers'}), 403
 
     if 'file' not in request.files:
-        return jsonify({'msg': 'No file part'}), 400
+        return jsonify({'msg': 'No file uploaded'}), 400
 
     file = request.files['file']
     title = request.form.get('title')
@@ -196,9 +195,13 @@ def list_papers():
 @app.route('/api/papers/<int:paper_id>', methods=['GET'])
 def get_paper(paper_id):
     paper = Paper.query.get_or_404(paper_id)
-    return send_from_directory(app.config['UPLOAD_FOLDER'], paper.filename, as_attachment=False)
+    return send_from_directory(
+        directory=os.path.abspath(app.config['UPLOAD_FOLDER']),
+        path=paper.filename,
+        as_attachment=False
+    )
 
-# === Init ===
+# === App Start ===
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
