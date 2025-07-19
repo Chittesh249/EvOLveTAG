@@ -1,31 +1,99 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: linear-gradient(to bottom right, #2C3E50, #4CA1AF);
+  padding-top: 80px; /* adjust based on your navbar height */
+  box-sizing: border-box;
+}
+
+
+
 .form-container {
+  width: 100%;
   max-width: 400px;
-  margin: 50px auto;
   padding: 30px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f7f7f7;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .form-container h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  color: #2C3E50;
+  font-weight: 600;
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
 }
 
 .form-container input {
-  display: block;
   width: 100%;
-  margin-bottom: 15px;
-  padding: 10px;
+  padding: 12px;
+  margin-bottom: 20px;
   font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: 0.2s ease;
+}
+
+.form-container input:focus {
+  border-color: #4CA1AF;
+  outline: none;
+  background-color: #f1faff;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  font-size: 14px;
+  color: #4CA1AF;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
 }
 
 .form-container button {
   width: 100%;
-  padding: 10px;
-  background-color: #007bff;
+  padding: 12px;
+  background-color: #4CA1AF;
   color: white;
   font-size: 16px;
+  font-weight: 600;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-container button:hover {
+  background-color: #3b8fa4;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.signup-text a {
+  color: #4CA1AF;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
 }
