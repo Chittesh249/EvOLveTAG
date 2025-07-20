@@ -1,0 +1,41 @@
+:root {
+    /* Blue Theme */
+    --blog-primary: #2563eb;
+    --blog-primary-light: #3b82f6;
+    --blog-primary-dark: #1d4ed8;
+    --blog-secondary: #1e40af;
+    --blog-accent: #60a5fa;
+    
+    --blog-text: #1f2937;
+    --blog-text-light: #6b7280;
+    --blog-bg: #f9fafb;
+    --blog-card-bg: #ffffff;
+    --blog-border: #e5e7eb;
+    
+    --blog-success: #10b981;
+    --blog-warning: #f59e0b;
+    --blog-error: #ef4444;
+    
+    --blog-radius: 8px;
+    --blog-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --blog-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.blog-container {
+    --primary: var(--blog-primary);
+    --primary-light: var(--blog-primary-light);
+    --primary-dark: var(--blog-primary-dark);
+    --secondary: var(--blog-secondary);
+    --accent: var(--blog-accent);
+    --text: var(--blog-text);
+    --text-light: var(--blog-text-light);
+    --bg: var(--blog-bg);
+    --card-bg: var(--blog-card-bg);
+    --border: var(--blog-border);
+    --success: var(--blog-success);
+    --warning: var(--blog-warning);
+    --error: var(--blog-error);
+    --radius: var(--blog-radius);
+    --shadow: var(--blog-shadow);
+    --shadow-md: var(--blog-shadow-md);
+}
