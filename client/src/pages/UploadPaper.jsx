@@ -1,75 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import API from '../api/axios';
-import './styles/UploadPaper.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { papersApi } from "../api/services";
+import "./styles/Page.css";
+import "./styles/Upload.css";
 
 export default function UploadPaper() {
-  const [form, setForm] = useState({ title: '', author: '' });
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
   const [file, setFile] = useState(null);
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    const jwt = localStorage.getItem('token');
-    if (!jwt) {
-      alert('You must be logged in to upload a paper.');
-      window.location.href = '/login';
-    } else {
-      setToken(jwt);
-    }
-  }, []);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     if (!file) {
-      alert('Please select a PDF file.');
+      setError("Please select a PDF file.");
       return;
     }
-
-    const formData = new FormData();
-    formData.append('title', form.title);
-    formData.append('author', form.author);
-    formData.append('file', file);
-
+    setSubmitting(true);
     try {
-      await API.post('/papers', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      alert('Paper uploaded successfully!');
-      setForm({ title: '', author: '' });
-      setFile(null);
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("author", author.trim());
+      formData.append("file", file);
+      const res = await papersApi.upload(formData);
+      if (res.success) {
+        navigate("/papers");
+        return;
+      }
+      setError(res.message || "Upload failed.");
     } catch (err) {
-      alert(err.response?.data?.msg || 'Upload failed');
+      setError(err.response?.data?.message || "Upload failed.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="upload-container">
-      <h2>Upload Research Paper</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Paper Title"
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Author Name"
-          value={form.author}
-          onChange={(e) => setForm({ ...form, author: e.target.value })}
-          required
-        />
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
-        <button type="submit">Upload</button>
-      </form>
+    <div className="page">
+      <div className="container narrow">
+        <h1 className="page-title">Upload paper</h1>
+        <p className="page-subtitle">Add a research paper (PDF only)</p>
+        <div className="card">
+          <div className="card-body">
+            <form onSubmit={handleSubmit} className="upload-form">
+              {error && <div className="message error" role="alert">{error}</div>}
+              <label htmlFor="upload-title" className="label">Title</label>
+              <input
+                id="upload-title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input"
+                required
+              />
+              <label htmlFor="upload-author" className="label">Author</label>
+              <input
+                id="upload-author"
+                type="text"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                className="input"
+                required
+              />
+              <label htmlFor="upload-file" className="label">PDF file</label>
+              <input
+                id="upload-file"
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="input"
+                required
+              />
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? "Uploading…" : "Upload"}
+                </button>
+                <button type="button" className="btn btn-outline" onClick={() => navigate("/papers")}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

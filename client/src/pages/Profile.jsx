@@ -1,87 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import API from '../api/axios';
-import './styles/Profile.css';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { profileApi } from "../api/services";
+import "./styles/Page.css";
+import "./styles/Profile.css";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', bio: '' });
-  const [loading, setLoading] = useState(true);
+  const { user, refreshUser } = useAuth();
+  const [name, setName] = useState(user?.name ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("Please login first.");
-        window.location.href = '/login';
-        return;
-      }
-
-      try {
-        const res = await API.get('/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(res.data);
-        setEditForm({ name: res.data.name || '', bio: res.data.bio || '' });
-        setLoading(false);
-      } catch (err) {
-        alert("Session expired or unauthorized. Please login again.");
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
-  const handleChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
-  };
-
-  const handleUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-
+    setMessage({ type: "", text: "" });
+    setSaving(true);
     try {
-      const res = await API.patch('/profile', editForm, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("Profile updated successfully.");
-      setUser(res.data);
-    } catch (err) {
-      alert("Update failed.");
+      const res = await profileApi.update({ name: name.trim() || null, bio: bio.trim() || null });
+      if (res.success) {
+        setMessage({ type: "success", text: "Profile updated." });
+        refreshUser();
+      } else {
+        setMessage({ type: "error", text: res.message || "Update failed." });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Update failed." });
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading) return <div className="profile-container">Loading...</div>;
-
   return (
-    <div className="profile-container">
-      <h2>Your Profile</h2>
-      <form onSubmit={handleUpdate}>
-        <label>Email</label>
-        <input type="text" value={user.email} disabled />
-
-        <label>Role</label>
-        <input type="text" value={user.role} disabled />
-
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={editForm.name}
-          onChange={handleChange}
-        />
-
-        <label htmlFor="bio">Bio</label>
-        <textarea
-          name="bio"
-          value={editForm.bio}
-          rows="4"
-          onChange={handleChange}
-        />
-
-        <button type="submit">Update Profile</button>
-      </form>
+    <div className="page">
+      <div className="container narrow">
+        <h1 className="page-title">Your profile</h1>
+        <p className="page-subtitle">Manage your public profile</p>
+        <div className="card">
+          <div className="card-body">
+            <dl className="profile-meta">
+              <dt>Email</dt>
+              <dd>{user?.email}</dd>
+              <dt>Role</dt>
+              <dd>{user?.role}</dd>
+            </dl>
+            <form onSubmit={handleSubmit} className="profile-form">
+              {message.text && (
+                <div className={message.type === "success" ? "message success" : "message error"} role="alert">
+                  {message.text}
+                </div>
+              )}
+              <label htmlFor="profile-name" className="label">Display name</label>
+              <input
+                id="profile-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="input"
+              />
+              <label htmlFor="profile-bio" className="label">Bio</label>
+              <textarea
+                id="profile-bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="input"
+                rows={4}
+              />
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? "Saving…" : "Save changes"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

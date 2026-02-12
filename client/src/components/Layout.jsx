@@ -1,17 +1,19 @@
 import React from "react";
-import Navbar from './Navbar';
-import { Outlet } from 'react-router-dom';
-import './Layout.css'; // Create this new CSS file
+import Navbar from "./Navbar";
+import Footer from "./Footer";
+import { Outlet } from "react-router-dom";
+import "./Layout.css";
 
-const Layout = () => {
+function Layout() {
   return (
     <>
       <Navbar />
       <main className="main-content">
-        <Outlet /> 
+        <Outlet />
       </main>
+      <Footer />
     </>
   );
-};
+}
 
 export default Layout;

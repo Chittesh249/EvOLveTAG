@@ -1,9 +1,4 @@
 .main-content {
-  padding-top: 80px; 
-  min-height: calc(100vh - 80px); 
-}
-@media (max-width: 768px) {
-  .main-content {
-    padding-top: 120px; /* Extra space for stacked navbar */
-  }
+  flex: 1 1 auto;
+  padding: 2rem 0;
 }

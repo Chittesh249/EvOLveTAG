@@ -1,55 +1,52 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import AdminDashboard from './pages/AdminDashboard';
-import ResearchPapers from './pages/ResearchPapers';
-import UploadPaper from './pages/UploadPaper';
-import Layout from './components/Layout';
-import PaperList from './pages/PaperList';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import BlogPage from './pages/BlogPage';
-import BlogPost from './components/Blog/BlogPost';
-import CreatePost from './components/Blog/CreatePost';
-import PostList from './components/Blog/PostList';
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import PaperList from "./pages/PaperList";
+import UploadPaper from "./pages/UploadPaper";
+import AdminDashboard from "./pages/AdminDashboard";
+import Members from "./pages/Members";
+import MemberProfile from "./pages/MemberProfile";
+import Newsletters from "./pages/Newsletters";
+import NewsletterDetail from "./pages/NewsletterDetail";
 
-// Utility to check if token exists
-const isAuthenticated = () => !!localStorage.getItem('token');
+function ProtectedRoute({ children }) {
+  const { token, loading } = useAuth();
+  if (loading) return <div className="container" style={{ padding: "2rem", textAlign: "center" }}>Loading…</div>;
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
+}
 
-// Protected route component
-const ProtectedRoute = ({ element }) => {
-  return isAuthenticated() ? element : <Navigate to="/login" replace />;
-};
+function AdminRoute({ children }) {
+  const { token, loading, isAdmin } = useAuth();
+  if (loading) return <div className="container" style={{ padding: "2rem", textAlign: "center" }}>Loading…</div>;
+  if (!token) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/profile" replace />;
+  return children;
+}
 
-function App() {
+export default function App() {
   return (
     <Routes>
-      {/* Main routes with Layout (includes Navbar) */}
       <Route path="/" element={<Layout />}>
-        <Route index element={<PaperList />} />
-        <Route path="papers" element={<PaperList />} />
+        <Route index element={<Navigate to="/home" replace />} />
         <Route path="home" element={<Home />} />
-        <Route path="profile" element={<ProtectedRoute element={<Profile />} />} />
-        <Route path="admin" element={<ProtectedRoute element={<AdminDashboard />} />} />
-        <Route path="upload" element={<ProtectedRoute element={<UploadPaper />} />} />
-        
-        {/* Blog routes nested under Layout */}
-        <Route path="blog" element={<BlogPage />}>
-          <Route index element={<PostList />} />
-          <Route path="create" element={<ProtectedRoute element={<CreatePost />} />} />
-          <Route path="posts/:id" element={<BlogPost />} />
-        </Route>
+        <Route path="papers" element={<PaperList />} />
+        <Route path="members" element={<Members />} />
+        <Route path="members/:id" element={<MemberProfile />} />
+        <Route path="newsletters" element={<Newsletters />} />
+        <Route path="newsletters/:slugOrId" element={<NewsletterDetail />} />
+        <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="upload" element={<ProtectedRoute><UploadPaper /></ProtectedRoute>} />
+        <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       </Route>
-      
-      {/* Auth routes without Layout */}
-      <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-      
-      {/* Optional: redirect unknown routes */}
-      <Route path="*" element={<Navigate to="/papers" replace />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }
-
-export default App;

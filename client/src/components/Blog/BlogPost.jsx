@@ -1,11 +1,8 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
 import './styles/blog.css';
 
 const BlogPost = () => {
-    const { id } = useParams();
-    
-    // In a real app, this would come from an API call using the id
+    // In a real app, this would come from an API call using the id from params
     const post = {
         id: 1,
         title: 'Advances in Quantum Computing Research',
@@ -39,18 +36,18 @@ const BlogPost = () => {
                     <span>By {post.author}</span>
                     <span>{new Date(post.date).toLocaleDateString()}</span>
                 </div>
-                
-                <div 
-                    className="post-content" 
+
+                <div
+                    className="post-content"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
-                
+
                 <div className="post-tags">
                     {post.tags.map(tag => (
                         <span key={tag} className="tag">{tag}</span>
                     ))}
                 </div>
-                
+
                 <div className="post-actions">
                     <button className="action-btn">← Back to Posts</button>
                     <div>

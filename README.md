@@ -1,9 +1,80 @@
-# Software Requirements Specification (SRS)
-## Evolve TAG Website
+# Evolve TAG
+
+A WordPress-style research community platform: public home, member profiles, research papers, and newsletters. JWT-based auth with Admin and Member roles.
 
 ---
 
-## 1. Introduction
+## Quick start
+
+### Backend (Flask + PostgreSQL)
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Create a PostgreSQL database named `evolve_tag` (or set `DATABASE_URI`). Optional: copy `.env.example` to `.env` and set:
+
+- `DATABASE_URI` — e.g. `postgresql://user@localhost/evolve_tag`
+- `SECRET_KEY` / `JWT_SECRET_KEY` — required in production
+
+Run the API:
+
+```bash
+python run.py
+```
+
+API runs at **http://localhost:5000**. Tables are created on first run.
+
+### Frontend (React)
+
+```bash
+cd client
+npm install
+npm start
+```
+
+App runs at **http://localhost:3000**. Set `REACT_APP_API_URL=http://localhost:5000/api` if the API is on another host.
+
+### Production build (WordPress-style deploy)
+
+1. **Backend**: set `FLASK_ENV=production`, `DATABASE_URI`, and `SECRET_KEY`; run with gunicorn or your WSGI server.
+2. **Frontend**: `npm run build` in `client/`; serve the `build/` folder with a static server or reverse proxy (e.g. nginx). Point `REACT_APP_API_URL` to your API base URL.
+
+---
+
+## Deploy frontend to Vercel
+
+Only the **React app** is deployed to Vercel. The Flask backend must be hosted elsewhere (e.g. [Render](https://render.com), [Railway](https://railway.app), or a VPS) and connected via `REACT_APP_API_URL`.
+
+1. **Push your code** to GitHub (if not already).
+
+2. **Go to [vercel.com](https://vercel.com)** and sign in with GitHub.
+
+3. **Import** your repository. Click **Add New** → **Project** and select the `EvOLveTAG` repo.
+
+4. **Configure the project:**
+   - **Root Directory:** set to `client` (click **Edit** and choose the `client` folder).
+   - **Framework Preset:** Create React App (or leave as detected).
+   - **Build Command:** `npm run build` (default).
+   - **Output Directory:** `build` (default).
+
+5. **Environment variables:** Add:
+   - **Name:** `REACT_APP_API_URL`  
+   - **Value:** your backend API base URL, e.g. `https://your-backend.onrender.com/api`  
+   (No trailing slash. The app will call this for auth, papers, newsletters, etc.)
+
+6. **Deploy.** Click **Deploy**. Vercel will build and host the app; you’ll get a URL like `https://evolvetag.vercel.app`.
+
+**Note:** Deploy the backend first and enable CORS for your Vercel domain (e.g. `https://your-app.vercel.app`). The Flask app already allows all origins for `/api/*`; for production you may want to restrict this to your frontend URL.
+
+---
+
+## Software Requirements Specification (SRS)
+
+### 1. Introduction
 
 ### 1.1 Purpose
 This document outlines the functional and non-functional requirements for the **Evolve TAG Website**, a full-stack web application. It will serve as a WordPress-style platform allowing members to maintain personal profiles, publish research papers and newsletters, and enable secure access using JWT-based login.
