@@ -1,6 +1,7 @@
 // src/pages/PaperList.jsx
 import React, { useEffect, useState } from 'react';
 import API from '../api/axios';
+import { API_ORIGIN } from '../config';
 
 export default function PaperList() {
   const [papers, setPapers] = useState([]);
@@ -12,7 +13,7 @@ export default function PaperList() {
         const res = await API.get('/papers');
         const updated = res.data.map(p => ({
           ...p,
-          file_url: `http://localhost:5000${p.file_url}`
+          file_url: `${API_ORIGIN}${p.file_url}`
         }));
         setPapers(updated);
       } catch (err) {
