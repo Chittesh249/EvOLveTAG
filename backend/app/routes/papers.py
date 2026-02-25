@@ -3,7 +3,7 @@ Research papers: list (public), get file (public), upload (auth + member/admin).
 """
 import os
 
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, redirect
 from flask_jwt_extended import jwt_required, get_jwt
 
 from app.extensions import db
@@ -11,6 +11,15 @@ from app.models import Paper
 from app.utils import allowed_file, secure_paper_filename, admin_required
 
 papers_bp = Blueprint("papers", __name__)
+
+
+def get_supabase_client():
+    url = current_app.config.get("SUPABASE_URL")
+    key = current_app.config.get("SUPABASE_KEY")
+    if url and key:
+        from supabase import create_client
+        return create_client(url, key)
+    return None
 
 
 @papers_bp.route("", methods=["GET"])
@@ -25,6 +34,15 @@ def list_papers():
 @papers_bp.route("/<int:paper_id>", methods=["GET"])
 def get_paper(paper_id):
     paper = Paper.query.get_or_404(paper_id)
+    
+    supabase_url = current_app.config.get("SUPABASE_URL")
+    supabase_bucket = current_app.config.get("SUPABASE_BUCKET")
+    
+    if supabase_url and supabase_bucket:
+        # Redirect to public storage URL
+        file_url = f"{supabase_url}/storage/v1/object/public/{supabase_bucket}/{paper.filename}"
+        return redirect(file_url)
+    
     upload_folder = current_app.config["UPLOAD_FOLDER"]
     path = os.path.abspath(upload_folder)
     return send_from_directory(path, paper.filename, as_attachment=False)
@@ -52,9 +70,26 @@ def upload_paper():
         return jsonify({"success": False, "message": "Title and author are required"}), 400
 
     filename = secure_paper_filename(file.filename)
-    upload_folder = current_app.config["UPLOAD_FOLDER"]
-    filepath = os.path.join(upload_folder, filename)
-    file.save(filepath)
+    
+    supabase = get_supabase_client()
+    supabase_bucket = current_app.config.get("SUPABASE_BUCKET")
+    
+    if supabase and supabase_bucket:
+        try:
+            # Upload to Supabase Storage
+            file_content = file.read()
+            supabase.storage.from_(supabase_bucket).upload(
+                path=filename,
+                file=file_content,
+                file_options={"content-type": "application/pdf"}
+            )
+        except Exception as e:
+            return jsonify({"success": False, "message": f"Supabase upload failed: {str(e)}"}), 500
+    else:
+        # Fallback to local storage
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
 
     paper = Paper(title=title, author=author, filename=filename)
     db.session.add(paper)

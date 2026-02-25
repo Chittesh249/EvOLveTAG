@@ -11,9 +11,9 @@ export default function PaperList() {
     const fetchPapers = async () => {
       try {
         const res = await API.get('/papers');
-        const updated = res.data.map(p => ({
+        const updated = res.data.data.map(p => ({
           ...p,
-          file_url: `${API_ORIGIN}${p.file_url}`
+          file_url: p.file_url.startsWith('http') ? p.file_url : `${API_ORIGIN}${p.file_url}`
         }));
         setPapers(updated);
       } catch (err) {
