@@ -31,17 +31,27 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        os.environ.get("DATABASE_URI", "postgresql://vasudevkishor@localhost/evolve_tag")
-    )
+    _db_url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_URI") or "postgresql://vasudevkishor@localhost/evolve_tag"
+    if _db_url and _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
 
 
 class ProductionConfig(Config):
-    """Production configuration. DATABASE_URI and SECRET_KEY are validated when this config is used."""
+    """Production configuration. DATABASE_URL and SECRET_KEY are validated when this config is used."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_URI")
+    _db_url = os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_URI")
+    
+    # SQLAlchemy 1.4+ / 2.0 requires 'postgresql://' instead of 'postgres://'
+    if _db_url and _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = _db_url
     SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
+    
+    # Optional: Log if DB URI is missing (this will show in Vercel logs)
+    if not SQLALCHEMY_DATABASE_URI:
+        print("CRITICAL: DATABASE_URL not found in environment variables.")
 
 
 class TestingConfig(Config):

@@ -11,7 +11,13 @@ from app.extensions import bcrypt, cors, db, jwt, migrate
 
 def create_app(config_name=None):
     """Create and configure the Flask application."""
-    config_name = config_name or os.environ.get("FLASK_ENV", "development")
+    if not config_name:
+        # Auto-detect Vercel environment or default to development
+        if os.environ.get("VERCEL") or os.environ.get("FLASK_ENV") == "production":
+            config_name = "production"
+        else:
+            config_name = "development"
+
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
 

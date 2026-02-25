@@ -4,6 +4,9 @@ from app.extensions import db
 app = create_app()
 
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
 
 
