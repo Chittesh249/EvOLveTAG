@@ -12,7 +12,7 @@ export default function Members() {
     membersApi
       .list()
       .then((res) => {
-        if (res.success && res.data) setList(res.data);
+        if (res.success && Array.isArray(res.data)) setList(res.data);
       })
       .catch(() => setError("Failed to load members."))
       .finally(() => setLoading(false));

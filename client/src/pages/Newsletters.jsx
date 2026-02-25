@@ -12,7 +12,7 @@ export default function Newsletters() {
     newslettersApi
       .list()
       .then((res) => {
-        if (res.success && res.data) setList(res.data);
+        if (res.success && Array.isArray(res.data)) setList(res.data);
       })
       .catch(() => setError("Failed to load newsletters."))
       .finally(() => setLoading(false));
